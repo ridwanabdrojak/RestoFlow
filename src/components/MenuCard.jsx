@@ -18,7 +18,7 @@ const MenuCard = ({ item }) => {
         <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-100 flex flex-col h-full">
             <div className="h-40 overflow-hidden relative group">
                 <img
-                    src={item.image}
+                    src={item.image_url || item.image}
                     alt={item.name}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />

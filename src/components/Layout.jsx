@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Coffee, UtensilsCrossed, LogOut } from 'lucide-react';
+import { LayoutGrid, Coffee, UtensilsCrossed, LogOut, Database } from 'lucide-react';
 import { useOrder } from '../context/OrderContext';
+import { useMenu } from '../hooks/useMenu'; // New Hook
 import CartSidebar from './CartSidebar';
+import MenuManagementModal from './MenuManagementModal';
 import MenuCard from './MenuCard';
 import OrderQueue from './OrderQueue';
-import { menuData } from '../data/menuData';
 
 const Layout = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState('pos'); // 'pos' or 'kitchen'
     const [showMobileCart, setShowMobileCart] = useState(false);
+    const [showMenuManager, setShowMenuManager] = useState(false);
     const { cart } = useOrder();
 
-    const categories = ["All", ...new Set(menuData.map(item => item.category))];
+    // Switch to Dynamic Menu
+    const { menuItems, isLoading, seedMenu } = useMenu();
+
+    const categories = ["All", ...new Set(menuItems.map(item => item.category))];
     const [selectedCategory, setSelectedCategory] = useState("All");
 
     const filteredMenu = selectedCategory === "All"
-        ? menuData
-        : menuData.filter(item => item.category === selectedCategory);
+        ? menuItems
+        : menuItems.filter(item => item.category === selectedCategory);
+
+    // Temp Seed Handler
+    const handleSeed = () => {
+        if (confirm("Upload initial menu data to Supabase?")) {
+            seedMenu();
+        }
+    }
 
     return (
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 font-sans text-gray-900 overflow-hidden">
@@ -51,6 +63,31 @@ const Layout = ({ onLogout }) => {
                         <Coffee size={20} className="md:w-6 md:h-6" />
                         <span className="text-[10px] font-bold uppercase tracking-wider hidden md:block">Kitchen</span>
                     </button>
+
+                    <button
+                        onClick={() => {
+                            const pin = window.prompt("Enter Admin PIN:");
+                            if (pin === "0000") setShowMenuManager(true);
+                            else alert("Wrong PIN");
+                        }}
+                        className={`flex flex-col items-center justify-center gap-1 p-2 md:p-3 rounded-xl text-amber-300 hover:bg-white/5 hover:text-amber-100 transition-all`}
+                        title="Manage Menu"
+                    >
+                        <Database size={20} className="md:w-6 md:h-6" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider hidden md:block">Menu</span>
+                    </button>
+
+                    {/* TEMP: Seed Button (Hidden in production) */}
+                    {menuItems.length === 0 && !isLoading && (
+                        <button
+                            onClick={handleSeed}
+                            className={`flex flex-col items-center justify-center gap-1 p-2 md:p-3 rounded-xl text-amber-300 hover:bg-white/5 hover:text-amber-100 transition-all`}
+                            title="Seed Data"
+                        >
+                            <Database size={20} className="md:w-6 md:h-6" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider hidden md:block">Seed</span>
+                        </button>
+                    )}
                 </nav>
 
                 <div className="md:mt-auto md:pb-4 ml-auto md:ml-0">
@@ -151,6 +188,11 @@ const Layout = ({ onLogout }) => {
                     </div>
                 )}
             </div>
+
+            {/* Menu Manager Modal */}
+            {showMenuManager && (
+                <MenuManagementModal onClose={() => setShowMenuManager(false)} />
+            )}
         </div>
     );
 };

@@ -64,7 +64,7 @@ const CartSidebar = ({ onClose }) => {
                             {/* Top Row: Qty - Name - Price */}
                             <div className="flex items-start gap-3">
                                 {/* Thumbnail */}
-                                <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover bg-gray-100 flex-shrink-0" />
+                                <img src={item.image_url || item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover bg-gray-100 flex-shrink-0" />
 
                                 <div className="flex-grow min-w-0">
                                     <div className="flex justify-between items-start">
