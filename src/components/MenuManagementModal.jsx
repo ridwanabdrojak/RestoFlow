@@ -188,7 +188,7 @@ const MenuManagementModal = ({ onClose }) => {
                                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                                 </td>
                                                 <td className="py-3 text-right pr-2">
-                                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex justify-end gap-2 transition-opacity">
                                                         <button
                                                             onClick={() => setEditingItem(item)}
                                                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100 transition-all"
