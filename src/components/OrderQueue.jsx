@@ -30,9 +30,9 @@ const OrderDetailModal = ({ order, onClose, onAdvance }) => {
                                 {order.status}
                             </span>
                         </div>
-                        <p className="text-lg font-medium text-amber-600">{order.customerName}</p>
+                        <p className="text-lg font-medium text-amber-600">{order.customer_name}</p>
                         <p className="text-sm text-gray-500">
-                            {new Date(order.timestamp).toLocaleString('id-ID', {
+                            {new Date(order.created_at).toLocaleString('id-ID', {
                                 hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short'
                             })}
                         </p>
@@ -44,12 +44,12 @@ const OrderDetailModal = ({ order, onClose, onAdvance }) => {
 
                 <div className="flex-grow overflow-y-auto p-6 space-y-6">
                     {/* Global Note Highlight */}
-                    {order.globalNote && (
+                    {order.global_note && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex gap-3 shadow-sm">
                             <StickyNote className="text-yellow-600 flex-shrink-0 mt-1" size={20} />
                             <div>
                                 <h4 className="font-bold text-yellow-800 text-sm uppercase mb-1">Order Note</h4>
-                                <p className="text-gray-800 text-base italic leading-relaxed">"{order.globalNote}"</p>
+                                <p className="text-gray-800 text-base italic leading-relaxed">"{order.global_note}"</p>
                             </div>
                         </div>
                     )}
@@ -170,17 +170,17 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                                     <span className="font-bold text-gray-900 text-sm">#{order.id}</span>
                                     <span className="text-xs font-bold text-amber-600">{formatCurrency(order.total)}</span>
                                 </div>
-                                <p className="font-bold text-base text-gray-800 truncate">{order.customerName}</p>
+                                <p className="font-bold text-base text-gray-800 truncate">{order.customer_name}</p>
                                 <span className="text-[10px] text-gray-400 font-mono mt-0.5">
-                                    {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
 
                             {/* Notes Preview (Compact) */}
-                            {order.globalNote && (
+                            {order.global_note && (
                                 <div className="mb-2 p-1.5 bg-yellow-50 border border-yellow-100 rounded text-xs text-yellow-800 italic flex gap-1.5">
                                     <StickyNote size={12} className="flex-shrink-0 mt-0.5" />
-                                    <span className="line-clamp-1">{order.globalNote}</span>
+                                    <span className="line-clamp-1">{order.global_note}</span>
                                 </div>
                             )}
 
@@ -325,11 +325,11 @@ const OrderQueue = () => {
 
     const getOrders = (status) => activeOrders
         .filter(o => o.status === status)
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
     const doneOrders = activeOrders
         .filter(o => o.status === 'Done')
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const handleAdvance = (order) => {
         let nextStatus = 'Processing';

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const OrderContext = createContext();
 
@@ -7,46 +8,61 @@ export const useOrder = () => {
 };
 
 export const OrderProvider = ({ children }) => {
-    // In-memory state
+    // In-memory state for Cart (Local only)
     const [cart, setCart] = useState([]);
 
-    // Persisted state
-    const [activeOrders, setActiveOrders] = useState(() => {
-        try {
-            const saved = localStorage.getItem('activeOrders');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            console.error('Failed to load orders', e);
-            return [];
-        }
-    });
+    // Synced state for Active Orders (Supabase)
+    const [activeOrders, setActiveOrders] = useState([]);
 
-    const [orderCounter, setOrderCounter] = useState(() => {
-        try {
-            const saved = localStorage.getItem('orderCounter');
-            return saved ? parseInt(saved, 10) : 1;
-        } catch (e) {
-            return 1;
-        }
-    });
-
-    // Save to LocalStorage whenever Active Orders or Counter changes
+    // 1. Fetch Initial Orders & Real-time Subscription
     useEffect(() => {
-        localStorage.setItem('activeOrders', JSON.stringify(activeOrders));
-    }, [activeOrders]);
+        fetchOrders();
 
-    useEffect(() => {
-        localStorage.setItem('orderCounter', orderCounter.toString());
-    }, [orderCounter]);
+        // POLL FRAMEWORK (Backup if Realtime fails)
+        const interval = setInterval(() => {
+            fetchOrders();
+        }, 3000); // Check every 3 seconds
 
+        // 2. Real-time Subscription
+        const channel = supabase
+            .channel('public:orders')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'orders' },
+                (payload) => {
+                    console.log('🔔 Realtime Change:', payload);
+                    fetchOrders();
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Connected to Realtime for orders');
+                }
+            });
 
-    // Smart Merge Logic
+        return () => {
+            clearInterval(interval);
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
+    const fetchOrders = async () => {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: true }); // Process items in order
+
+        if (error) {
+            console.error('Error fetching orders:', error);
+        } else {
+            setActiveOrders(data || []);
+        }
+    };
+
+    // Smart Merge Logic (Cart)
     const addToCart = (item) => {
         setCart(prev => {
-            // 1. Check if same item already exists with an EMPTY note
             const existingItem = prev.find(i => i.id === item.id && (!i.note || i.note.trim() === ''));
-
-            // 2. If found, increment quantity (Merge)
             if (existingItem) {
                 return prev.map(i =>
                     i.cartId === existingItem.cartId
@@ -54,8 +70,6 @@ export const OrderProvider = ({ children }) => {
                         : i
                 );
             }
-
-            // 3. If not found (or existing ones have notes), add as NEW line
             const cartId = Date.now() + Math.random();
             return [...prev, { ...item, cartId: cartId, quantity: 1, note: '' }];
         });
@@ -80,48 +94,83 @@ export const OrderProvider = ({ children }) => {
         ));
     };
 
-    const submitOrder = (customerName, globalNote) => {
+    const submitOrder = async (customerName, globalNote) => {
         if (cart.length === 0) return;
 
-        // Simple sequential ID
-        const orderId = orderCounter.toString();
-        setOrderCounter(prev => prev + 1);
-
         const newOrder = {
-            id: orderId,
-            customerName: customerName || 'Guest',
-            globalNote: globalNote || '',
-            items: [...cart],
+            customer_name: customerName || 'Guest',
+            global_note: globalNote || '',
+            items: cart, // Supabase stores JSON automatically
             total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-            status: 'Processing', // Start directly at Processing
-            timestamp: new Date().toISOString()
+            status: 'Processing'
         };
 
-        setActiveOrders(prev => [...prev, newOrder]);
-        setCart([]);
+        const { error } = await supabase
+            .from('orders')
+            .insert([newOrder]);
+
+        if (error) {
+            console.error('Error submitting order:', error);
+            alert('Failed to submit order!');
+        } else {
+            setCart([]); // Clear local cart on success
+        }
     };
 
-    const updateOrderStatus = (orderId, newStatus) => {
+    const updateOrderStatus = async (orderId, newStatus) => {
+        // Optimistic Update (Immediate Feedback)
         setActiveOrders(prev => prev.map(order =>
             order.id === orderId ? { ...order, status: newStatus } : order
         ));
+
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: newStatus })
+            .eq('id', orderId);
+
+        if (error) {
+            console.error('Error updating status:', error);
+            fetchOrders(); // Revert/Sync on error
+        }
     };
 
-    const clearCompletedOrders = () => {
+    const clearCompletedOrders = async () => {
+        // Optimistic
         setActiveOrders(prev => prev.filter(mode => mode.status !== 'Done'));
+
+        const { error } = await supabase
+            .from('orders')
+            .delete()
+            .eq('status', 'Done');
+
+        if (error) console.error('Error clearing completed:', error);
     };
 
-    // Fixed Delete Function
-    const deleteOrder = (orderId) => {
+    const deleteOrder = async (orderId) => {
+        // Optimistic
         setActiveOrders(prev => prev.filter(order => order.id !== orderId));
+
+        const { error } = await supabase
+            .from('orders')
+            .delete()
+            .eq('id', orderId);
+
+        if (error) console.error('Error deleting order:', error);
     };
 
-    // Reset System (Clear All Data)
-    const resetSystem = () => {
+    const resetSystem = async () => {
+        // Optimistic
         setActiveOrders([]);
-        setOrderCounter(1);
-        localStorage.removeItem('activeOrders');
-        localStorage.removeItem('orderCounter');
+        setCart([]);
+
+        // Try to call RPC function for clean reset (requires SQL setup)
+        const { error } = await supabase.rpc('reset_orders');
+
+        // Fallback if generic delete is needed (but won't reset IDs)
+        if (error) {
+            console.log('RPC reset_orders not found, falling back to delete');
+            await supabase.from('orders').delete().neq('id', 0);
+        }
     };
 
     const value = {
@@ -134,7 +183,7 @@ export const OrderProvider = ({ children }) => {
         submitOrder,
         updateOrderStatus,
         clearCompletedOrders,
-        deleteOrder, // Exposed correctly
+        deleteOrder,
         resetSystem
     };
 
