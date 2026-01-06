@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabaseClient';
 import { menuData as initialMenuData } from '../data/menuData';
@@ -18,6 +19,25 @@ export const useMenu = () => {
             return data;
         }
     });
+
+    // Realtime Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('public:menu_items')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'menu_items' },
+                (payload) => {
+                    console.log('🔔 Menu Change:', payload);
+                    queryClient.invalidateQueries({ queryKey: ['menu'] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [queryClient]);
 
     // 2. Add Item
     const addMutation = useMutation({
