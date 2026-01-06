@@ -11,7 +11,7 @@ const formatCurrency = (value) => {
     }).format(value);
 };
 
-const CartSidebar = () => {
+const CartSidebar = ({ onClose }) => {
     const { cart, removeFromCart, updateQuantity, updateItemNote, submitOrder } = useOrder();
     const [customerName, setCustomerName] = React.useState('');
     const [globalNote, setGlobalNote] = React.useState('');
@@ -25,19 +25,30 @@ const CartSidebar = () => {
         submitOrder(customerName, globalNote);
         setCustomerName(''); // Reset
         setGlobalNote('');   // Reset
+        if (onClose) onClose();
     };
 
     return (
-        <div className="bg-white border-l border-gray-200 w-96 flex flex-col h-full shadow-2xl z-20 font-sans">
+        <div className="bg-white border-l border-gray-200 w-full md:w-96 flex flex-col h-full shadow-2xl z-20 font-sans">
             {/* Header */}
-            <div className="p-5 border-b border-gray-100 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-10">
+            <div className="p-5 border-b border-gray-100 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3 text-gray-800">
                     <div className="bg-amber-100 p-2 rounded-lg text-amber-600">
                         <ShoppingBag size={20} />
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight">Current Order</h2>
+                    <h2 className="text-xl font-bold tracking-tight">Order</h2>
                 </div>
-                {cart.length > 0 && <p className="text-xs font-medium text-gray-400 mt-1 ml-11">{cart.length} items</p>}
+
+                <div className="flex items-center gap-3">
+                    {cart.length > 0 && <span className="text-xs font-medium text-gray-400">{cart.length} items</span>}
+                    {/* Mobile Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="md:hidden p-2 text-gray-400 hover:text-gray-600 active:scale-95 transition-transform"
+                    >
+                        <span className="text-2xl leading-none">&times;</span>
+                    </button>
+                </div>
             </div>
 
             {/* Cart Items List */}
