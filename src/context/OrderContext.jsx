@@ -25,6 +25,7 @@ export const OrderProvider = ({ children }) => {
             if (error) throw error;
             return data;
         },
+        refetchInterval: 3000, // Fallback: Polling every 3s
     });
 
     // --- REALTIME: Subscription Invalidation ---
