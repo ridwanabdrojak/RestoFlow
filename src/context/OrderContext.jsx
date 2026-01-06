@@ -30,20 +30,23 @@ export const OrderProvider = ({ children }) => {
 
     // --- REALTIME: Subscription Invalidation ---
     useEffect(() => {
+        console.log("🔌 Initializing Order Subscription...");
         const channel = supabase
-            .channel('public:orders')
+            .channel('public:orders_v2') // Changed to v2 to force fresh channel
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'orders' },
                 (payload) => {
-                    console.log('🔔 Realtime Change:', payload);
-                    // Invalidate means "Mark data as stale, please refetch"
+                    console.log('🔔 Order Realtime Change:', payload);
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log("📡 Order Subscription Status:", status);
+            });
 
         return () => {
+            console.log("🛑 Cleaning up Order Subscription...");
             supabase.removeChannel(channel);
         };
     }, [queryClient]);
