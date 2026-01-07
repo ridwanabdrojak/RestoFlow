@@ -278,7 +278,7 @@ const AggregatedStats = ({ orders, status, title, icon: Icon, colorClass, bgClas
     const hasItems = Object.keys(itemMap).length > 0;
 
     return (
-        <div className={`p-2 rounded-lg border flex flex-col shadow-sm h-28 ${bgClass} overflow-hidden relative min-w-[140px] md:min-w-0 flex-shrink-0 snap-start`}>
+        <div className={`p-2 rounded-lg border flex flex-col shadow-sm h-40 ${bgClass} overflow-hidden relative min-w-[140px] md:min-w-0 flex-shrink-0 snap-start`}>
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-lg bg-white/60 ${colorClass}`}>
@@ -289,7 +289,7 @@ const AggregatedStats = ({ orders, status, title, icon: Icon, colorClass, bgClas
             </div>
 
             {/* Aggregated List */}
-            <div className="flex-grow overflow-y-auto custom-scrollbar pr-1">
+            <div className="flex-grow overflow-y-auto scrollbar-hide pr-3">
                 {hasItems ? (
                     <ul className="space-y-1">
                         {Object.entries(itemMap).map(([name, count]) => (
