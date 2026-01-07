@@ -286,9 +286,6 @@ const AggregatedStats = ({ orders, status, title, icon: Icon, colorClass, bgClas
                     </div>
                     <h3 className={`font-bold text-xs uppercase tracking-wider ${colorClass}`}>{title}</h3>
                 </div>
-                <span className={`text-2xl font-bold ${colorClass.replace('text-', 'text-opacity-80 ')}`}>
-                    {statusOrders.length}
-                </span>
             </div>
 
             {/* Aggregated List */}
