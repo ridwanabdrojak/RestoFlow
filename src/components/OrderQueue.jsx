@@ -156,12 +156,12 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                         <span className="mt-2 text-xs font-medium">No orders</span>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3 auto-rows-min">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-min">
                         {orders.map((order) => (
                             <div
                                 key={order.id}
                                 onClick={() => onOrderClick(order)}
-                                className="bg-white p-3 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
+                                className="bg-white p-2.5 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
                             >
                                 {/* Tiny Status Indicator */}
                                 <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${dotStyle}`} />
