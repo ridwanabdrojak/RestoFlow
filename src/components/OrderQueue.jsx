@@ -135,121 +135,123 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
             'bg-green-500';
 
     return (
-        <div className="flex-1 min-w-[300px] flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
+        <div className="flex-1 min-w-[280px] flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
             {/* Dense Header */}
             <div className={`p-3 border-b ${headerStyle} flex items-center justify-between`}>
                 <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-lg bg-white/60 backdrop-blur-sm shadow-sm`}>
                         <Icon size={16} />
                     </div>
-                    <h2 className="font-bold text-sm uppercase tracking-wide">{title}</h2>
+                    <h2 className="font-bold text-sm lg:text-lg uppercase tracking-wide">{title}</h2>
                 </div>
                 <span className={`${dotStyle} text-white px-2 py-0.5 rounded-full text-xs font-bold`}>
                     {orders.length}
                 </span>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-2 space-y-2 bg-gray-50/50 custom-scrollbar">
+            <div className="flex-grow overflow-y-auto p-2 bg-gray-50/50 custom-scrollbar scrollbar-hide">
                 {orders.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-300">
                         <Icon size={32} strokeWidth={1} />
                         <span className="mt-2 text-xs font-medium">No orders</span>
                     </div>
                 ) : (
-                    orders.map((order) => (
-                        <div
-                            key={order.id}
-                            onClick={() => onOrderClick(order)}
-                            className="bg-white p-3 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5"
-                        >
-                            {/* Tiny Status Indicator */}
-                            <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${dotStyle}`} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-min">
+                        {orders.map((order) => (
+                            <div
+                                key={order.id}
+                                onClick={() => onOrderClick(order)}
+                                className="bg-white p-3 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
+                            >
+                                {/* Tiny Status Indicator */}
+                                <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${dotStyle}`} />
 
-                            <div className="flex flex-col mb-2">
-                                <div className="flex justify-between items-start pr-4">
-                                    <span className="font-bold text-gray-900 text-sm">#{order.id}</span>
-                                    <span className="text-xs font-bold text-amber-600">{formatCurrency(order.total)}</span>
-                                </div>
-                                <p className="font-bold text-base text-gray-800 truncate">{order.customer_name}</p>
-                                <span className="text-[10px] text-gray-400 font-mono mt-0.5">
-                                    {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                            </div>
-
-                            {/* Notes Preview (Compact) */}
-                            {order.global_note && (
-                                <div className="mb-2 p-1.5 bg-yellow-50 border border-yellow-100 rounded text-xs text-yellow-800 italic flex gap-1.5">
-                                    <StickyNote size={12} className="flex-shrink-0 mt-0.5" />
-                                    <span className="line-clamp-1">{order.global_note}</span>
-                                </div>
-                            )}
-
-                            <div className="space-y-1 mb-3">
-                                {order.items.slice(0, 3).map((item, idx) => (
-                                    <div key={idx} className="text-xs text-gray-600">
-                                        <div className="flex justify-between">
-                                            <span className="truncate">
-                                                <span className="font-bold text-gray-800">{item.quantity}x</span> {item.name}
-                                            </span>
-                                        </div>
-                                        {item.note && (
-                                            <div className="flex items-center gap-1 pl-4 text-gray-400 italic">
-                                                <MessageSquare size={8} />
-                                                <span className="text-[10px] leading-tight line-clamp-1">{item.note}</span>
-                                            </div>
-                                        )}
+                                <div className="flex flex-col mb-2">
+                                    <div className="flex justify-between items-start pr-4">
+                                        <span className="font-bold text-gray-900 text-sm lg:text-base">#{order.id}</span>
+                                        <span className="text-xs lg:text-sm font-bold text-amber-600">{formatCurrency(order.total)}</span>
                                     </div>
-                                ))}
-                                {order.items.length > 3 && (
-                                    <p className="text-[10px] text-gray-400 pl-1">+ {order.items.length - 3} more...</p>
+                                    <p className="font-bold text-base lg:text-xl text-gray-800 truncate">{order.customer_name}</p>
+                                    <span className="text-[10px] lg:text-xs text-gray-400 font-mono mt-0.5">
+                                        {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+
+                                {/* Notes Preview (Compact) */}
+                                {order.global_note && (
+                                    <div className="mb-2 p-1.5 bg-yellow-50 border border-yellow-100 rounded text-xs text-yellow-800 italic flex gap-1.5">
+                                        <StickyNote size={12} className="flex-shrink-0 mt-0.5" />
+                                        <span className="line-clamp-1">{order.global_note}</span>
+                                    </div>
                                 )}
-                            </div>
 
-                            <div className="flex gap-1.5 mt-auto">
-                                {/* Delete Button */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (window.confirm(`Delete Order #${order.id}?`)) {
-                                            onDelete(order.id);
-                                        }
-                                    }}
-                                    className="p-1.5 rounded-md text-red-400 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors"
-                                    title="Delete Order"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                                <div className="space-y-1 mb-3 flex-grow">
+                                    {order.items.slice(0, 3).map((item, idx) => (
+                                        <div key={idx} className="text-xs lg:text-base text-gray-600">
+                                            <div className="flex justify-between">
+                                                <span className="truncate">
+                                                    <span className="font-bold text-gray-800">{item.quantity}x</span> {item.name}
+                                                </span>
+                                            </div>
+                                            {item.note && (
+                                                <div className="flex items-center gap-1 pl-4 text-gray-400 italic">
+                                                    <MessageSquare size={8} />
+                                                    <span className="text-[10px] lg:text-sm leading-tight line-clamp-1">{item.note}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {order.items.length > 3 && (
+                                        <p className="text-[10px] text-gray-400 pl-1">+ {order.items.length - 3} more...</p>
+                                    )}
+                                </div>
 
-                                {/* Compact Revert Button */}
-                                {getPrevStatus(status) && (
+                                <div className="flex gap-1.5 mt-auto pt-2 border-t border-gray-50">
+                                    {/* Delete Button */}
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onStatusChange(order.id, getPrevStatus(status));
+                                            if (window.confirm(`Delete Order #${order.id}?`)) {
+                                                onDelete(order.id);
+                                            }
                                         }}
-                                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+                                        className="p-1.5 rounded-md text-red-400 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors"
+                                        title="Delete Order"
                                     >
-                                        <ArrowLeft size={14} />
+                                        <Trash2 size={14} />
                                     </button>
-                                )}
 
-                                {status !== 'Done' && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onStatusChange(order.id, getNextStatus(status));
-                                        }}
-                                        className={`flex-grow py-1.5 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-sm
-                         ${status === 'Processing' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' :
-                                                'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
-                                    >
-                                        {statusLabel(status)}
-                                        <ArrowRight size={14} />
-                                    </button>
-                                )}
+                                    {/* Compact Revert Button */}
+                                    {getPrevStatus(status) && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onStatusChange(order.id, getPrevStatus(status));
+                                            }}
+                                            className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+                                        >
+                                            <ArrowLeft size={14} />
+                                        </button>
+                                    )}
+
+                                    {status !== 'Done' && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onStatusChange(order.id, getNextStatus(status));
+                                            }}
+                                            className={`flex-grow py-1.5 px-3 rounded-md text-xs lg:text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm
+                             ${status === 'Processing' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' :
+                                                    'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
+                                        >
+                                            {statusLabel(status)}
+                                            <ArrowRight size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 )}
             </div>
         </div>
