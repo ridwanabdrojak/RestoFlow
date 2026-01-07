@@ -8,7 +8,7 @@ const LoginScreen = ({ onLogin }) => {
 
   // Hardcoded PIN for now - commonly used default for demos or simple setups
   // In a real app complexity, this might come from env or backend
-  const CORRECT_PIN = "9999";
+  const CORRECT_PIN = import.meta.env.VITE_LOGIN_PIN || "9999";
 
   const handleNumberClick = (num) => {
     if (pin.length < 4) {
@@ -42,7 +42,25 @@ const LoginScreen = ({ onLogin }) => {
         setTimeout(() => setPin(''), 500);
       }
     }
-  }, [pin, onLogin]);
+  }, [pin, onLogin, CORRECT_PIN]);
+
+  // Handle Physical Keyboard Input
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        if (pin.length < 4) {
+          setPin(prev => prev + e.key);
+          setError(false);
+        }
+      } else if (e.key === 'Backspace') {
+        setPin(prev => prev.slice(0, -1));
+        setError(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pin]);
 
   return (
     <div className="fixed inset-0 bg-slate-900 flex items-center justify-center p-4">

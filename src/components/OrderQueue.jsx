@@ -316,7 +316,7 @@ const OrderQueue = () => {
     const { activeOrders, updateOrderStatus, deleteOrder, resetSystem } = useOrder();
     const [selectedOrder, setSelectedOrder] = useState(null);
 
-    const ADMIN_PIN = "0000";
+    const ADMIN_PIN = import.meta.env.VITE_KDS_PIN || "0000";
 
     const checkPin = () => {
         const pin = window.prompt("🔐 Enter Admin PIN to confirm:");

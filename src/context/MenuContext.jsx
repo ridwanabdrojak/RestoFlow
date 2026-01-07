@@ -15,6 +15,8 @@ export const MenuProvider = ({ children }) => {
             const { data, error } = await supabase
                 .from('menu_items')
                 .select('*')
+                .select('*')
+                .order('sort_order', { ascending: true })
                 .order('id', { ascending: true });
 
             if (error) throw error;
@@ -72,6 +74,25 @@ export const MenuProvider = ({ children }) => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['menu'] })
     });
 
+    const reorderMutation = useMutation({
+        mutationFn: async (items) => {
+            // Bulk update sort_order
+            // Note: Supabase JS doesn't have a simple bulk update for different values in one go without RPC or multiple requests.
+            // For simplicity and small menu size, we'll do concurrent updates. 
+            // For larger production, consider an RPC function `upsert_menu_orders`.
+
+            const updates = items.map((item, index) =>
+                supabase.from('menu_items').update({ sort_order: index + 1 }).eq('id', item.id)
+            );
+
+            await Promise.all(updates);
+        },
+        onSuccess: () => {
+            // Optimistic update handled by component usually, but we refresh to be safe
+            queryClient.invalidateQueries({ queryKey: ['menu'] });
+        }
+    });
+
     // 4. Seeding
     const seedMenu = async () => {
         if (menuItems.length > 0) {
@@ -101,7 +122,9 @@ export const MenuProvider = ({ children }) => {
         error,
         addItem: addMutation.mutate,
         updateItem: updateMutation.mutate,
+        updateItem: updateMutation.mutate,
         deleteItem: deleteMutation.mutate,
+        reorderItems: reorderMutation.mutate,
         seedMenu
     };
 

@@ -1,12 +1,130 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Edit2, Trash2, Save, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, Save, GripVertical } from 'lucide-react'; // Added GripVertical
 import { useMenu } from '../hooks/useMenu';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Row Component
+const SortableRow = ({ item, onEdit, onDelete }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: item.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        position: 'relative',
+    };
+
+    return (
+        <tr
+            ref={setNodeRef}
+            style={style}
+            className={`group hover:bg-gray-50 transition-colors ${isDragging ? 'bg-amber-50 shadow-lg' : ''}`}
+        >
+            <td className="w-10 pl-2">
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="p-2 text-gray-400 hover:text-amber-600 cursor-grab active:cursor-grabbing touch-none"
+                    title="Drag to reorder"
+                >
+                    <GripVertical size={20} />
+                </button>
+            </td>
+            <td className="py-3 pl-2 flex items-center gap-3">
+                <img
+                    src={item.image_url || 'https://via.placeholder.com/40'}
+                    className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                    alt={item.name}
+                    draggable={false} // Prevent image drag interfering with row drag
+                />
+                <span className="font-bold text-gray-800">{item.name}</span>
+            </td>
+            <td className="py-3">
+                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{item.category}</span>
+            </td>
+            <td className="py-3 font-medium text-gray-600">
+                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
+            </td>
+            <td className="py-3 text-right pr-2">
+                <div className="flex justify-end gap-2 transition-opacity">
+                    <button
+                        onClick={() => onEdit(item)}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100 transition-all"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <button
+                        onClick={() => onDelete(item.id)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100 transition-all"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+};
 
 const MenuManagementModal = ({ onClose }) => {
-    const { menuItems, addItem, updateItem, deleteItem } = useMenu();
+    const { menuItems, addItem, updateItem, deleteItem, reorderItems } = useMenu();
     const [editingItem, setEditingItem] = useState(null); // null = list mode, object = edit mode, {} = add mode
+    const [localItems, setLocalItems] = useState([]);
 
-    // Form State
+    // Sync local state with global state when not dragging
+    // We update localItems whenever menuItems changes
+    useEffect(() => {
+        setLocalItems(menuItems);
+    }, [menuItems]);
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            setLocalItems((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Trigger backend update
+                reorderItems(newItems);
+
+                return newItems;
+            });
+        }
+    };
+
+
+    // Form State (Same as before)
     const [formData, setFormData] = useState({
         name: '',
         price: '',
@@ -15,7 +133,6 @@ const MenuManagementModal = ({ onClose }) => {
         description: ''
     });
 
-    // Populate form when editing
     useEffect(() => {
         if (editingItem && editingItem.id) {
             setFormData({
@@ -40,7 +157,7 @@ const MenuManagementModal = ({ onClose }) => {
         e.preventDefault();
         const payload = {
             ...formData,
-            price: parseFloat(formData.price), // Ensure number
+            price: parseFloat(formData.price),
         };
 
         if (editingItem?.id) {
@@ -48,7 +165,7 @@ const MenuManagementModal = ({ onClose }) => {
         } else {
             addItem(payload);
         }
-        setEditingItem(null); // Back to list
+        setEditingItem(null);
     };
 
     const handleDelete = (id) => {
@@ -76,6 +193,8 @@ const MenuManagementModal = ({ onClose }) => {
                     {editingItem ? (
                         <div className="w-full p-8 overflow-y-auto">
                             <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-5">
+                                {/* ... FORM FIELDS (unchanged mostly) ... */}
+                                {/* Re-implementing form cleanly to ensure it works */}
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Item Name</label>
                                     <input
@@ -126,7 +245,7 @@ const MenuManagementModal = ({ onClose }) => {
                                         />
                                         {formData.image_url && (
                                             <div className="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
-                                                <img src={formData.image_url} className="w-full h-full object-cover" />
+                                                <img src={formData.image_url} className="w-full h-full object-cover" alt="Preview" />
                                             </div>
                                         )}
                                     </div>
@@ -153,9 +272,10 @@ const MenuManagementModal = ({ onClose }) => {
                     ) : (
                         <div className="w-full flex flex-col">
                             {/* Toolbar */}
-                            <div className="p-4 border-b border-gray-100 flex justify-end">
+                            <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                                <span className="text-sm text-gray-500 italic ml-2">Drag <GripVertical className="inline w-3 h-3" /> to reorder items</span>
                                 <button
-                                    onClick={() => setEditingItem({})} // Empty object signals "New Item"
+                                    onClick={() => setEditingItem({})}
                                     className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-colors"
                                 >
                                     <Plus size={18} />
@@ -164,49 +284,39 @@ const MenuManagementModal = ({ onClose }) => {
                             </div>
 
                             {/* Table */}
-                            <div className="flex-grow overflow-y-auto p-4">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100">
-                                            <th className="pb-3 pl-2">Item</th>
-                                            <th className="pb-3">Category</th>
-                                            <th className="pb-3">Price</th>
-                                            <th className="pb-3 text-right pr-2">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {menuItems.map(item => (
-                                            <tr key={item.id} className="group hover:bg-gray-50 transition-colors">
-                                                <td className="py-3 pl-2 flex items-center gap-3">
-                                                    <img src={item.image_url || 'https://via.placeholder.com/40'} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
-                                                    <span className="font-bold text-gray-800">{item.name}</span>
-                                                </td>
-                                                <td className="py-3">
-                                                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{item.category}</span>
-                                                </td>
-                                                <td className="py-3 font-medium text-gray-600">
-                                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
-                                                </td>
-                                                <td className="py-3 text-right pr-2">
-                                                    <div className="flex justify-end gap-2 transition-opacity">
-                                                        <button
-                                                            onClick={() => setEditingItem(item)}
-                                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100 transition-all"
-                                                        >
-                                                            <Edit2 size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(item.id)}
-                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100 transition-all"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </td>
+                            <div className="flex-grow overflow-y-auto p-4 custom-scrollbar">
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100">
+                                                <th className="pb-3 pl-2 w-10">#</th>
+                                                <th className="pb-3 pl-2">Item</th>
+                                                <th className="pb-3">Category</th>
+                                                <th className="pb-3">Price</th>
+                                                <th className="pb-3 text-right pr-2">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <SortableContext
+                                            items={localItems.map(item => item.id)}
+                                            strategy={verticalListSortingStrategy}
+                                        >
+                                            <tbody className="divide-y divide-gray-50">
+                                                {localItems.map(item => (
+                                                    <SortableRow
+                                                        key={item.id}
+                                                        item={item}
+                                                        onEdit={setEditingItem}
+                                                        onDelete={handleDelete}
+                                                    />
+                                                ))}
+                                            </tbody>
+                                        </SortableContext>
+                                    </table>
+                                </DndContext>
                             </div>
                         </div>
                     )}
