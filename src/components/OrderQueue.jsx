@@ -244,9 +244,7 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                              ${status === 'Processing' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' :
                                                     'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
                                         >
-                                            {/* Hide Text on Small Screens (TV reported as md) */}
-                                            <span className="md:hidden xl:inline">{statusLabel(status)}</span>
-                                            <span className="hidden md:inline xl:hidden">{statusLabel(status).substring(0, 1)}</span>
+                                            {statusLabel(status)}
                                             <ArrowRight size={12} />
                                         </button>
                                     )}
