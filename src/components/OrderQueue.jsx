@@ -156,57 +156,57 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                         <span className="mt-2 text-xs font-medium">No orders</span>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 auto-rows-min">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-min">
                         {orders.map((order) => (
                             <div
                                 key={order.id}
                                 onClick={() => onOrderClick(order)}
-                                className="bg-white p-2.5 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
+                                className="bg-white p-2 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
                             >
                                 {/* Tiny Status Indicator */}
                                 <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${dotStyle}`} />
 
-                                <div className="flex flex-col mb-1.5">
+                                <div className="flex flex-col mb-1">
                                     <div className="flex justify-between items-start pr-3">
                                         <span className="font-bold text-gray-900 text-sm">#{order.id}</span>
                                         <span className="text-[10px] font-bold text-amber-600">{formatCurrency(order.total)}</span>
                                     </div>
-                                    <p className="font-bold text-base text-gray-800 truncate leading-tight">{order.customer_name}</p>
-                                    <span className="text-[10px] text-gray-400 font-mono">
+                                    <p className="font-bold text-sm text-gray-800 truncate leading-tight">{order.customer_name}</p>
+                                    <span className="text-[10px] text-gray-400 font-mono hidden lg:block">
                                         {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
 
                                 {/* Notes Preview (Compact) */}
                                 {order.global_note && (
-                                    <div className="mb-1.5 p-1 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 italic flex gap-1">
-                                        <StickyNote size={10} className="flex-shrink-0 mt-0.5" />
+                                    <div className="mb-1 p-0.5 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 italic flex gap-1">
+                                        <StickyNote size={8} className="flex-shrink-0 mt-0.5" />
                                         <span className="line-clamp-1">{order.global_note}</span>
                                     </div>
                                 )}
 
-                                <div className="space-y-0.5 mb-2 flex-grow">
-                                    {order.items.slice(0, 4).map((item, idx) => (
-                                        <div key={idx} className="text-xs text-gray-600">
+                                <div className="space-y-0.5 mb-1.5 flex-grow">
+                                    {order.items.slice(0, 2).map((item, idx) => (
+                                        <div key={idx} className="text-[10px] lg:text-xs text-gray-600">
                                             <div className="flex justify-between">
-                                                <span className="truncate">
+                                                <span className="truncate max-w-[150px]">
                                                     <span className="font-bold text-gray-800">{item.quantity}x</span> {item.name}
                                                 </span>
                                             </div>
                                             {item.note && (
-                                                <div className="flex items-center gap-1 pl-3 text-gray-400 italic">
-                                                    <MessageSquare size={8} />
-                                                    <span className="text-[10px] leading-tight line-clamp-1">{item.note}</span>
+                                                <div className="flex items-center gap-1 pl-2 text-gray-400 italic">
+                                                    <MessageSquare size={6} />
+                                                    <span className="text-[9px] leading-tight line-clamp-1">{item.note}</span>
                                                 </div>
                                             )}
                                         </div>
                                     ))}
-                                    {order.items.length > 4 && (
-                                        <p className="text-[10px] text-gray-400 pl-1">+ {order.items.length - 4} more...</p>
+                                    {order.items.length > 2 && (
+                                        <p className="text-[9px] text-gray-400 pl-1">+ {order.items.length - 2} more...</p>
                                     )}
                                 </div>
 
-                                <div className="flex gap-1.5 mt-auto pt-2 border-t border-gray-50">
+                                <div className="flex gap-1 mt-auto pt-1.5 border-t border-gray-50">
                                     {/* Delete Button */}
                                     <button
                                         onClick={(e) => {
@@ -215,10 +215,10 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                                                 onDelete(order.id);
                                             }
                                         }}
-                                        className="p-1.5 rounded-md text-red-400 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors"
-                                        title="Delete Order"
+                                        className="p-1 rounded bg-red-50 text-red-400 hover:text-red-700 hover:bg-red-100 border-transparent transition-colors"
+                                        title="Delete"
                                     >
-                                        <Trash2 size={14} />
+                                        <Trash2 size={12} />
                                     </button>
 
                                     {/* Compact Revert Button */}
@@ -228,9 +228,9 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                                                 e.stopPropagation();
                                                 onStatusChange(order.id, getPrevStatus(status));
                                             }}
-                                            className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+                                            className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
                                         >
-                                            <ArrowLeft size={14} />
+                                            <ArrowLeft size={12} />
                                         </button>
                                     )}
 
@@ -240,12 +240,14 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                                                 e.stopPropagation();
                                                 onStatusChange(order.id, getNextStatus(status));
                                             }}
-                                            className={`flex-grow py-1.5 px-3 rounded-md text-xs lg:text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm
+                                            className={`flex-grow py-1 px-2 rounded text-[10px] lg:text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-sm
                              ${status === 'Processing' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' :
                                                     'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
                                         >
-                                            {statusLabel(status)}
-                                            <ArrowRight size={14} />
+                                            {/* Hide Text on Small Screens (TV reported as md) */}
+                                            <span className="md:hidden xl:inline">{statusLabel(status)}</span>
+                                            <span className="hidden md:inline xl:hidden">{statusLabel(status).substring(0, 1)}</span>
+                                            <ArrowRight size={12} />
                                         </button>
                                     )}
                                 </div>
