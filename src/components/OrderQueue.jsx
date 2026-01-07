@@ -278,7 +278,7 @@ const AggregatedStats = ({ orders, status, title, icon: Icon, colorClass, bgClas
     const hasItems = Object.keys(itemMap).length > 0;
 
     return (
-        <div className={`p-3 rounded-xl border flex flex-col shadow-sm h-32 ${bgClass} overflow-hidden relative`}>
+        <div className={`p-3 rounded-xl border flex flex-col shadow-sm h-32 ${bgClass} overflow-hidden relative min-w-[160px] md:min-w-0 flex-shrink-0 snap-start`}>
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-lg bg-white/60 ${colorClass}`}>
@@ -373,7 +373,7 @@ const OrderQueue = () => {
             </header>
 
             {/* Aggregated Dashboard */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="flex overflow-x-auto gap-3 mb-4 pb-2 md:pb-0 md:grid md:grid-cols-3 scrollbar-hide">
                 <AggregatedStats
                     title="Processing"
                     status="Processing"
