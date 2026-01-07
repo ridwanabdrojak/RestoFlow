@@ -156,7 +156,7 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                         <span className="mt-2 text-xs font-medium">No orders</span>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3 auto-rows-min">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3 auto-rows-min">
                         {orders.map((order) => (
                             <div
                                 key={order.id}
