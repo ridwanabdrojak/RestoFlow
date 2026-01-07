@@ -137,14 +137,14 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
     return (
         <div className="flex-1 min-w-[280px] flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
             {/* Dense Header */}
-            <div className={`p-3 border-b ${headerStyle} flex items-center justify-between`}>
+            <div className={`p-2 border-b ${headerStyle} flex items-center justify-between`}>
                 <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg bg-white/60 backdrop-blur-sm shadow-sm`}>
-                        <Icon size={16} />
+                    <div className={`p-1 rounded-md bg-white/60 backdrop-blur-sm shadow-sm`}>
+                        <Icon size={14} />
                     </div>
-                    <h2 className="font-bold text-sm lg:text-lg uppercase tracking-wide">{title}</h2>
+                    <h2 className="font-bold text-sm uppercase tracking-wide">{title}</h2>
                 </div>
-                <span className={`${dotStyle} text-white px-2 py-0.5 rounded-full text-xs font-bold`}>
+                <span className={`${dotStyle} text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold`}>
                     {orders.length}
                 </span>
             </div>
@@ -156,7 +156,7 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                         <span className="mt-2 text-xs font-medium">No orders</span>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-min">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3 auto-rows-min">
                         {orders.map((order) => (
                             <div
                                 key={order.id}
@@ -164,45 +164,45 @@ const StatusColumn = ({ title, status, orders, onStatusChange, onDelete, icon: I
                                 className="bg-white p-3 rounded-lg border border-gray-200 hover:border-amber-300 shadow-sm hover:shadow-md transition-all cursor-pointer group relative hover:-translate-y-0.5 h-full flex flex-col"
                             >
                                 {/* Tiny Status Indicator */}
-                                <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${dotStyle}`} />
+                                <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${dotStyle}`} />
 
-                                <div className="flex flex-col mb-2">
-                                    <div className="flex justify-between items-start pr-4">
-                                        <span className="font-bold text-gray-900 text-sm lg:text-base">#{order.id}</span>
-                                        <span className="text-xs lg:text-sm font-bold text-amber-600">{formatCurrency(order.total)}</span>
+                                <div className="flex flex-col mb-1.5">
+                                    <div className="flex justify-between items-start pr-3">
+                                        <span className="font-bold text-gray-900 text-sm">#{order.id}</span>
+                                        <span className="text-[10px] font-bold text-amber-600">{formatCurrency(order.total)}</span>
                                     </div>
-                                    <p className="font-bold text-base lg:text-xl text-gray-800 truncate">{order.customer_name}</p>
-                                    <span className="text-[10px] lg:text-xs text-gray-400 font-mono mt-0.5">
+                                    <p className="font-bold text-base text-gray-800 truncate leading-tight">{order.customer_name}</p>
+                                    <span className="text-[10px] text-gray-400 font-mono">
                                         {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
 
                                 {/* Notes Preview (Compact) */}
                                 {order.global_note && (
-                                    <div className="mb-2 p-1.5 bg-yellow-50 border border-yellow-100 rounded text-xs text-yellow-800 italic flex gap-1.5">
-                                        <StickyNote size={12} className="flex-shrink-0 mt-0.5" />
+                                    <div className="mb-1.5 p-1 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 italic flex gap-1">
+                                        <StickyNote size={10} className="flex-shrink-0 mt-0.5" />
                                         <span className="line-clamp-1">{order.global_note}</span>
                                     </div>
                                 )}
 
-                                <div className="space-y-1 mb-3 flex-grow">
-                                    {order.items.slice(0, 3).map((item, idx) => (
-                                        <div key={idx} className="text-xs lg:text-base text-gray-600">
+                                <div className="space-y-0.5 mb-2 flex-grow">
+                                    {order.items.slice(0, 4).map((item, idx) => (
+                                        <div key={idx} className="text-xs text-gray-600">
                                             <div className="flex justify-between">
                                                 <span className="truncate">
                                                     <span className="font-bold text-gray-800">{item.quantity}x</span> {item.name}
                                                 </span>
                                             </div>
                                             {item.note && (
-                                                <div className="flex items-center gap-1 pl-4 text-gray-400 italic">
+                                                <div className="flex items-center gap-1 pl-3 text-gray-400 italic">
                                                     <MessageSquare size={8} />
-                                                    <span className="text-[10px] lg:text-sm leading-tight line-clamp-1">{item.note}</span>
+                                                    <span className="text-[10px] leading-tight line-clamp-1">{item.note}</span>
                                                 </div>
                                             )}
                                         </div>
                                     ))}
-                                    {order.items.length > 3 && (
-                                        <p className="text-[10px] text-gray-400 pl-1">+ {order.items.length - 3} more...</p>
+                                    {order.items.length > 4 && (
+                                        <p className="text-[10px] text-gray-400 pl-1">+ {order.items.length - 4} more...</p>
                                     )}
                                 </div>
 
@@ -278,7 +278,7 @@ const AggregatedStats = ({ orders, status, title, icon: Icon, colorClass, bgClas
     const hasItems = Object.keys(itemMap).length > 0;
 
     return (
-        <div className={`p-3 rounded-xl border flex flex-col shadow-sm h-32 ${bgClass} overflow-hidden relative min-w-[160px] md:min-w-0 flex-shrink-0 snap-start`}>
+        <div className={`p-2 rounded-lg border flex flex-col shadow-sm h-28 ${bgClass} overflow-hidden relative min-w-[140px] md:min-w-0 flex-shrink-0 snap-start`}>
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-lg bg-white/60 ${colorClass}`}>
